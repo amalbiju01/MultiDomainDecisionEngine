@@ -1,53 +1,38 @@
-<%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="java.util.*" %>
+<%@ page import="com.amal.model.Option" %>
 
-<!DOCTYPE html>
 <html>
 <head>
-    <title>Course Ranking Result</title>
+    <title>Results</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="container">
-    <h1>Course Ranking Result</h1>
+<h2>Ranking Results</h2>
 
-    <%
-        List<Map.Entry<String, Integer>> ranking =
-            (List<Map.Entry<String, Integer>>) request.getAttribute("ranking");
+<%
+List<Map.Entry<Option, Integer>> ranked =
+        (List<Map.Entry<Option, Integer>>) request.getAttribute("rankedOptions");
 
-        if (ranking != null && !ranking.isEmpty()) {
+int rank = 1;
 
-            int rank = 1;
+for (Map.Entry<Option, Integer> entry : ranked) {
+%>
 
-            for (Map.Entry<String, Integer> entry : ranking) {
-    %>
+    <p>
+        <strong><%= rank %>. <%= entry.getKey().getName() %></strong>
+        - Score: <%= entry.getValue() %>
+    </p>
 
-                <p>
-                    <strong><%= rank %>. <%= entry.getKey() %></strong>
-                    — Score: <%= entry.getValue() %>
-                </p>
+<%
+    rank++;
+}
+%>
+<br><br>
 
-    <%
-                rank++;
-            }
-
-        } else {
-    %>
-
-            <p>No ranking results found.</p>
-
-    <%
-        }
-    %>
-
-    <br><br>
-
-    <a href="index.html">
-        <button class="submit-btn">Back</button>
-    </a>
-
-</div>
+<a href="index.jsp">
+    <button>Back to Home</button>
+</a>
 
 </body>
 </html>

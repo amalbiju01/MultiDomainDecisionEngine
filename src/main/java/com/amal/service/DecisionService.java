@@ -1,41 +1,23 @@
 package com.amal.service;
 
-import com.amal.model.Course;
+import com.amal.model.Domain;
+import com.amal.model.Option;
 
 import java.util.*;
 
 public class DecisionService {
 
-    private List<Course> courses = new ArrayList<>();
-
-    public DecisionService() {
-
-        courses.add(new Course("Java Full Stack Developer",
-                Map.of("salary", 9, "stability", 9, "fastJob", 5,
-                        "coding", 9, "backendPreference", 9,
-                        "difficulty", 9, "corporatePreference", 9)));
-
-        courses.add(new Course("MERN Stack Developer",
-                Map.of("salary", 8, "stability", 7, "fastJob", 8,
-                        "coding", 8, "backendPreference", 5,
-                        "difficulty", 7, "corporatePreference", 4)));
-
-        courses.add(new Course("Software Testing & Automation",
-                Map.of("salary", 6, "stability", 8, "fastJob", 9,
-                        "coding", 5, "backendPreference", 4,
-                        "difficulty", 6, "corporatePreference", 8)));
-    }
-
-    public List<Map.Entry<String, Integer>> rankCourses(
+    public List<Map.Entry<Option, Integer>> rankOptions(
+            Domain domain,
             Map<String, Integer> userInput,
-            List<String> selectedCourses
+            List<String> selectedOptions
     ) {
 
-        List<Map.Entry<String, Integer>> ranked = new ArrayList<>();
+        List<Map.Entry<Option, Integer>> ranked = new ArrayList<>();
 
-        for (Course course : courses) {
+        for (Option option : domain.getOptions()) {
 
-            if (!selectedCourses.contains(course.getName()))
+            if (!selectedOptions.contains(option.getName()))
                 continue;
 
             int score = 0;
@@ -43,13 +25,16 @@ public class DecisionService {
             for (String key : userInput.keySet()) {
 
                 int userValue = userInput.get(key);
-                int courseValue = course.getWeights().get(key) / 2; // scale 1-9 to 1-5
+                Integer optionValue = option.getCriteriaValues().get(key);
 
-                score += (5 - Math.abs(userValue - courseValue));
+                if (optionValue == null) continue;
+
+                int scaledValue = optionValue / 2;
+
+                score += (5 - Math.abs(userValue - scaledValue));
             }
 
-
-            ranked.add(Map.entry(course.getName(), score));
+            ranked.add(Map.entry(option, score));
         }
 
         ranked.sort((a, b) -> b.getValue() - a.getValue());

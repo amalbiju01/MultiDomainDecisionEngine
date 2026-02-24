@@ -1,15 +1,15 @@
 package com.amal.servlet;
 
+import com.amal.config.DomainFactory;
+import com.amal.model.Domain;
+import com.amal.model.Option;
 import com.amal.service.DecisionService;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import javax.servlet.http.*;
 import java.io.IOException;
 import java.util.*;
-
 
 @WebServlet("/evaluate")
 public class EvaluateServlet extends HttpServlet {
@@ -18,32 +18,43 @@ public class EvaluateServlet extends HttpServlet {
                           HttpServletResponse response)
             throws ServletException, IOException {
 
-
-
-        String[] selected = request.getParameterValues("course");
-
-
-        if (selected == null) {
-            response.getWriter().println("Please select at least one course.");
-            return;
-        }
-
         Map<String, Integer> userInput = new HashMap<>();
 
-        userInput.put("salary", Integer.parseInt(request.getParameter("salary")));
-        userInput.put("stability", Integer.parseInt(request.getParameter("stability")));
-        userInput.put("fastJob", Integer.parseInt(request.getParameter("fastJob")));
-        userInput.put("coding", Integer.parseInt(request.getParameter("coding")));
-        userInput.put("backendPreference", Integer.parseInt(request.getParameter("backendPreference")));
-        userInput.put("difficulty", Integer.parseInt(request.getParameter("difficulty")));
-        userInput.put("corporatePreference", Integer.parseInt(request.getParameter("corporatePreference")));
+        // Collect user inputs
+        userInput.put("salary",
+                Integer.parseInt(request.getParameter("salary")));
+        userInput.put("stability",
+                Integer.parseInt(request.getParameter("stability")));
+        userInput.put("fastJob",
+                Integer.parseInt(request.getParameter("fastJob")));
+        userInput.put("coding",
+                Integer.parseInt(request.getParameter("coding")));
+        userInput.put("backendPreference",
+                Integer.parseInt(request.getParameter("backendPreference")));
+        userInput.put("difficulty",
+                Integer.parseInt(request.getParameter("difficulty")));
+        userInput.put("corporatePreference",
+                Integer.parseInt(request.getParameter("corporatePreference")));
 
+        // Collect selected courses from previous page
+        String[] selected = request.getParameterValues("course");
+
+        List<String> selectedCourses = new ArrayList<>();
+
+        if (selected != null) {
+            selectedCourses = Arrays.asList(selected);
+        }
+
+        // Build Career Domain
+        Domain careerDomain = DomainFactory.buildCareerDomain();
+
+        // Rank using generic engine
         DecisionService service = new DecisionService();
 
-        List<Map.Entry<String, Integer>> ranked =
-                service.rankCourses(userInput, Arrays.asList(selected));
+        List<Map.Entry<Option, Integer>> ranked =
+                service.rankOptions(careerDomain, userInput, selectedCourses);
 
-        request.setAttribute("ranking", ranked);
+        request.setAttribute("rankedOptions", ranked);
 
         request.getRequestDispatcher("result.jsp")
                 .forward(request, response);

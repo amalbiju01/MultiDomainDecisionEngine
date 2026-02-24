@@ -1,3 +1,11 @@
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%
+    String domainType = request.getParameter("domain");
+    if (domainType == null) {
+        domainType = "career";
+    }
+%>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -10,8 +18,11 @@
     <h1>FutureTech Academy</h1>
     <p class="subtitle">Select Courses You Are Interested In</p>
 
-    <!-- Use POST (more professional) -->
+    <!-- POST to assessment.jsp -->
     <form action="assessment.jsp" method="post">
+
+        <!-- Preserve Domain -->
+        <input type="hidden" name="domain" value="<%= domainType %>">
 
         <div class="section">
 
@@ -44,6 +55,14 @@
         </button>
 
     </form>
+
+    <br>
+
+    <!-- Back Button -->
+    <a href="index.jsp">
+        <button>Back to Home</button>
+    </a>
+
 </div>
 
 </body>

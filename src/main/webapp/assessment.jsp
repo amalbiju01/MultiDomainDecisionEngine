@@ -1,79 +1,86 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
+<%
+    String domainType = request.getParameter("domain");
+    String[] selectedCourses = request.getParameterValues("course");
+
+    if (domainType == null) {
+        domainType = "career";
+    }
+%>
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Assessment</title>
+    <title>Career Assessment</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<%
-    String[] courses = request.getParameterValues("course");
-
-    if (courses == null) {
-%>
-        <div class="container">
-            <h2>Please select at least one course.</h2>
-            <a href="course.jsp">Go Back</a>
-        </div>
-<%
-        return;
-    }
-%>
-
 <div class="container">
     <h1>FutureTech Academy</h1>
-    <p class="subtitle">Course Recommendation Assessment</p>
+    <p class="subtitle">Rate Your Preferences (1 = Low, 5 = High)</p>
 
     <form action="evaluate" method="post">
 
-        <!-- Hidden course values -->
+        <!-- Preserve Domain -->
+        <input type="hidden" name="domain" value="<%= domainType %>">
+
+        <!-- Preserve Selected Courses -->
         <%
-            for(String c : courses){
+            if (selectedCourses != null) {
+                for (String c : selectedCourses) {
         %>
-            <input type="hidden" name="course" value="<%= c %>">
+                    <input type="hidden" name="course" value="<%= c %>">
         <%
+                }
             }
         %>
 
         <div class="section">
-            <h2>Career Goals</h2>
 
-            <label>Salary Growth</label>
-            <input type="range" name="salary" min="1" max="5" value="3">
+            Salary Importance:
+            <input type="range" name="salary" min="1" max="5" required>
+            <br><br>
 
-            <label>Long Term Stability</label>
-            <input type="range" name="stability" min="1" max="5" value="3">
+            Stability:
+            <input type="range" name="stability" min="1" max="5" required>
+            <br><br>
 
-            <label>Get Job Quickly</label>
-            <input type="range" name="fastJob" min="1" max="5" value="3">
+            Fast Job Opportunity:
+            <input type="range" name="fastJob" min="1" max="5" required>
+            <br><br>
+
+            Coding Interest:
+            <input type="range" name="coding" min="1" max="5" required>
+            <br><br>
+
+            Backend Preference:
+            <input type="range" name="backendPreference" min="1" max="5" required>
+            <br><br>
+
+            Difficulty Tolerance:
+            <input type="range" name="difficulty" min="1" max="5" required>
+            <br><br>
+
+            Corporate Environment Preference:
+            <input type="range" name="corporatePreference" min="1" max="5" required>
+
         </div>
 
-        <div class="section">
-            <h2>Technical Preference</h2>
-
-            <label>Enjoy Coding</label>
-            <input type="range" name="coding" min="1" max="5" value="3">
-
-            <label>Backend Preference</label>
-            <input type="range" name="backendPreference" min="1" max="5" value="3">
-        </div>
-
-        <div class="section">
-            <h2>Learning Style</h2>
-
-            <label>Comfort with Difficulty</label>
-            <input type="range" name="difficulty" min="1" max="5" value="3">
-
-            <label>Corporate Preference</label>
-            <input type="range" name="corporatePreference" min="1" max="5" value="3">
-        </div>
+        <br>
 
         <button type="submit" class="submit-btn">
-            Find My Best Course
+            Evaluate
         </button>
 
     </form>
+
+    <br>
+
+    <a href="course.jsp?domain=<%= domainType %>">
+        <button>Back to Course Selection</button>
+    </a>
+
 </div>
 
 </body>
