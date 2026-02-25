@@ -12,7 +12,9 @@
     <h1>Decision Companion System</h1>
     <p class="subtitle">Choose the domain you want to evaluate</p>
 
-    <form action="course.jsp" method="get">
+    <form action="router.jsp" method="get">
+
+
 
         <div class="section">
 
