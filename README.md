@@ -203,7 +203,7 @@ Instead of rewriting from scratch, abstractions were introduced gradually.
 1. Clone the repository:
 
    git clone <repository-url>
-   cd career-decision-system
+   cd MultiDomainDecisionEngine
 
 2. Build the project:
 
