@@ -1,146 +1,262 @@
 # MultiDomain Decision Engine
 
+A structured, explainable multi-criteria decision-making system built using Java Servlets and JSP.
+
+This project implements a reusable evaluation engine capable of ranking multiple options across different domains such as Career Recommendation and Laptop Recommendation.
+
+---
+
 ## 1. Problem Understanding
 
-The goal of this assignment was not just to build a recommendation system, but to design a structured decision-making framework that:
+The objective of this project was not merely to build a recommendation system, but to design a structured and deterministic decision-making framework that:
 
-- Accepts user preferences
+- Accepts user-defined preferences and importance weights
 - Evaluates multiple competing options
 - Produces a ranked result
-- Remains explainable and deterministic
+- Remains transparent and explainable
 
-Rather than building a hardcoded single-use solution, the system was designed as a reusable decision engine capable of supporting multiple domains (Career, Laptop, etc.).
-### 1.1 Evolution of the Solution
+Instead of implementing a hardcoded, single-use solution, the system was designed as a reusable decision engine capable of supporting multiple decision domains (Career, Laptop, etc.) without modifying the core scoring logic.
 
-The project initially began as a single-domain Career Decision System.
+---
 
-In its first version:
-- Courses were hardcoded inside the service layer.
-- The scoring logic directly depended on the Career domain.
-- The architecture was functional but tightly coupled.
+## 2. Evolution of the Solution
 
-During development, it became clear that this structure would not scale to additional decision categories such as Laptop Recommendation.
+The project began as a **single-domain Career Decision System**.
 
-To address this, the architecture was refactored to:
+### Initial Version Characteristics
 
-- Introduce a `Domain` abstraction.
-- Replace `Course` with a generic `Option` model.
-- Extract configuration into `DomainFactory`.
-- Make `DecisionService` completely domain-independent.
+- Courses were hardcoded in the service layer
+- Scoring logic was tightly coupled with Career-specific attributes
+- Architecture worked but lacked scalability
+
+As development progressed, it became clear that this approach would not support additional domains such as Laptop Recommendation.
+
+### Refactoring Strategy
+
+The architecture was incrementally refactored to:
+
+- Introduce a `Domain` abstraction
+- Replace `Course` with a generic `Option` model
+- Extract domain configuration into `DomainFactory`
+- Make the scoring engine fully domain-independent
 
 This transformation shifted the system from:
+
 > A working recommendation feature
 
 to:
+
 > A reusable, scalable decision engine.
 
-This refactoring was incremental and done without breaking existing functionality.
+The refactoring was performed incrementally without breaking existing functionality.
 
 ---
 
-## 2. Assumptions Made
+## 3. Assumptions Made
 
-- User preference inputs are provided on a scale of 1–5.
-- Option weights are normalized to match the same scale.
-- Only selected options should be ranked.
-- All decision criteria are independent and contribute equally.
-- The system prioritizes transparency over black-box AI scoring.
+- User preference inputs are provided on a scale of 1–5
+- Option weights are aligned to the same scale
+- Only user-selected options are ranked
+- All decision criteria contribute independently
+- Transparency is prioritized over black-box AI scoring
 
 ---
 
-## 3. Why This Structure Was Chosen
+## 4. Architecture Overview
 
-The solution was structured into three logical layers:
+The solution follows a layered architecture:
 
 ### Model Layer
-- `Domain` represents a decision category.
-- `Option` represents a choice within that domain.
-- `DomainFactory` builds domain-specific configurations.
+- `Domain` → Represents a decision category
+- `Option` → Represents a selectable choice
+- `DomainFactory` → Builds domain-specific configurations
 
-This ensures domain logic is separated from the scoring engine.
-
-### Service Layer
-- `DecisionService` contains a generic ranking algorithm.
-- It does not depend on Career or Laptop specifically.
-- It operates only on Domain and Option abstractions.
-
-This makes the scoring engine reusable and framework-independent.
+### Engine / Service Layer
+- Domain-agnostic scoring engine
+- Handles similarity calculation, weighting, ranking, and confidence modeling
+- Does not depend on Career or Laptop logic
 
 ### Web Layer
-- JSP handles presentation.
-- Servlet handles orchestration.
-- Business logic remains isolated.
+- JSP handles presentation
+- Servlet handles orchestration and request processing
+- Business logic remains isolated from UI
 
-This separation improves maintainability and scalability.
+This separation improves maintainability, scalability, and testability.
 
 ---
 
-## 4. Core Scoring Logic
+## 5. Core Scoring Logic
 
 For each selected option:
 
-This approach was chosen because:
+1. Iterate through each criterion
+2. Retrieve:
+   - `userValue`
+   - `optionValue`
+3. Normalize option value (if required)
+4. Compute similarity:
 
-- It rewards similarity rather than absolute dominance.
-- It keeps scoring deterministic and explainable.
-- It avoids arbitrary multipliers.
+   similarity = 5 - abs(userValue - optionValue)
 
-Options are then sorted in descending order.
+5. Clamp similarity to minimum 0
+6. Compute weighted score:
 
----
+   weightedScore = similarity × userImportance
 
-## 5. Design Decisions and Trade-offs
+7. Accumulate total score
+8. Repeat for all criteria
+9. Sort options in descending order of totalScore
+10. Compute confidence using score gap between top two options
+11. Generate explanation based on highest weighted criteria
 
-### Decision: Build a Domain-Agnostic Engine
-The system was intentionally refactored from a single-domain Career solution into a generic Domain–Option architecture.
+### Properties of the Algorithm
 
-Instead of embedding domain logic inside the service layer, a `Domain` abstraction was introduced, and configuration was moved to `DomainFactory`.
-
-Trade-off:
-- Increased architectural complexity early on
-- Greater scalability and extensibility for new domains (e.g., Laptop recommendation)
-
----
-
-### Decision: Use Deterministic Similarity Scoring
-A transparent similarity-based scoring formula was used:
-
-This ensures predictable and explainable ranking.
-
-Trade-off:
-- Less adaptive than AI/ML-based models
-- Fully interpretable and easier to debug
+- Deterministic output
+- Fully explainable
+- Transparent scoring
+- No probabilistic behavior
 
 ---
 
-### Decision: Keep Data Configuration In-Memory
-Domains are currently constructed programmatically rather than loaded from a database or JSON.
+## 6. Design Decisions and Trade-offs
 
-Trade-off:
-- Faster development and easier reasoning
-- Not ideal for large-scale or production systems
+### Domain-Agnostic Architecture
+
+**Pros**
+- Scalable
+- Reusable
+- Extendable
+
+**Cons**
+- Slightly higher structural complexity
 
 ---
 
-### Decision: Incremental Refactoring Instead of Rewriting
-Rather than rebuilding from scratch, the system was refactored step-by-step:
+### Deterministic Similarity Scoring
 
-- First stabilized the single-domain version.
-- Then introduced abstractions.
-- Preserved filtering logic.
-- Updated the web layer accordingly.
+**Pros**
+- Fully explainable
+- Easy to debug
+- Predictable behavior
 
-Trade-off:
+**Cons**
+- Not adaptive like machine learning models
+
+---
+
+### In-Memory Domain Configuration
+
+**Pros**
+- Faster development
+- Simpler reasoning
+
+**Cons**
+- Not ideal for very large datasets
+
+---
+
+### Incremental Refactoring
+
+Instead of rewriting from scratch, abstractions were introduced gradually.
+
+**Pros**
+- Reduced risk
+- Maintained working system
+
+**Cons**
 - Temporary duplication during transition
-- Reduced risk of breaking existing functionality
-
-## 6. Edge Cases Considered
-
-- No courses selected → returns empty ranking.
-- Missing parameters → form validation prevents submission.
-- Unmatched criteria keys → safely ignored.
-- Browser caching of welcome page → resolved via proper web.xml configuration.
-- Filtering ensures only selected options are ranked.
 
 ---
 
+## 7. Edge Cases Considered
+
+- No options selected → Validation prevents submission
+- Less than two options selected → Redirected to selection page
+- Missing parameters → Required field enforcement
+- Unmatched criteria → Safely ignored
+- Negative similarity values → Clamped to zero
+- Score ties → Deterministic sorting
+
+---
+
+## 8. Technology Stack
+
+- Java (Servlet API)
+- JSP
+- Maven
+- Apache Tomcat
+- HTML / CSS
+- Git
+
+---
+
+## 9. How to Run the Project
+
+### Requirements
+
+- Java 8 or above
+- Maven
+- Apache Tomcat
+
+### Steps
+
+1. Clone the repository:
+
+   git clone <repository-url>
+   cd career-decision-system
+
+2. Build the project:
+
+   mvn clean package
+
+3. Deploy the generated WAR file:
+
+   target/career-decision-system.war
+
+4. Place it inside Tomcat `webapps/` directory.
+
+5. Start Tomcat.
+
+6. Access the application:
+
+   http://localhost:8080/career-decision-system/
+
+---
+
+## 10. Design Diagrams
+
+The following diagrams are included in the `/docs` directory:
+
+- System Architecture Diagram
+- DFD Level 0
+- DFD Level 1
+- Decision Logic Flowchart
+
+---
+
+## 11. Future Improvements
+
+With more time, the following enhancements could be added:
+
+- Dynamic domain loading via JSON or database
+- Persistent storage of user evaluations
+- Advanced normalization strategies
+- REST API version of decision engine
+- Frontend modernization using a JavaScript framework
+- Unit testing for scoring logic
+- Performance optimization for large option sets
+
+---
+
+## 12. Conclusion
+
+This project evolved from a simple domain-specific recommendation tool into a structured, reusable decision engine.
+
+The focus was placed on:
+
+- Architectural clarity
+- Algorithm transparency
+- Extensibility
+- Deterministic reasoning
+
+The final result is a modular evaluation framework capable of supporting multiple decision domains without modifying the scoring engine itself.
